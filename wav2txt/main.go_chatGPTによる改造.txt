@@ -1,0 +1,242 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"bytes"
+
+	"google.golang.org/api/option"
+
+	speech "cloud.google.com/go/speech/apiv1"
+	texttospeech "cloud.google.com/go/texttospeech/apiv1"
+
+	"google.golang.org/genproto/googleapis/cloud/speech/v1"
+	"google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
+)
+
+// GPT APIの認証鍵のパス
+const apiURL = "https://api.openai.com/v1/chat/completions"
+
+// GPT APIのリクエスト構造体
+type GPTRequest struct {
+	Model    string       `json:"model"`
+	Messages []GPTMessage `json:"messages"`
+}
+
+type GPTMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// GPT APIのレスポンス構造体
+type GPTResponse struct {
+	Choices []GPTChoice `json:"choices"`
+}
+
+type GPTChoice struct {
+	Message GPTMessage `json:"message"`
+}
+
+func main() {
+	// サービスアカウントキーのパス
+	serviceAccountKeyPath := "C:/Users/sakur/VoiceGPT/Googlecloudkey/tmciteeep-230010-voicegpt-21fb464420b2.json"
+
+	// GPT APIのAPIキーをjsonファイルから取得
+	apiKey, err := getAPIKey("gptkey.json")
+	if err != nil {
+		log.Fatalf("Failed to get API key: %v", err)
+	}
+
+	// 初期設定(パス等)
+	s2taudioFilePath := "./testaudio3a.wav"  // Speech-to-Textで入力するWAVファイルのパス
+	s2toutputFilePath := "./s2ttesttext.txt" // Speech-to-Textから出力するテキストファイルのパス
+
+	t2sInputFilePath := "./t2stesttext.txt"    // Text-to-Speechで入力するテキストファイルのパス
+	t2sOutputAudioPath := "./t2stestaudio.wav" // Text-to-Speechから出力するWAVファイルのパス
+
+	GPTinputFile := "GPTtesttextIN.txt"
+	GPToutputFile := "GPTtesttextOUT.txt"
+
+	// Speech to Text
+	// 音声ファイルを読み込む
+	audioData, err := ioutil.ReadFile(s2taudioFilePath)
+	if err != nil {
+		log.Fatalf("Failed to read audio file: %v", err)
+	}
+
+	// Google Speech-to-Text クライアントを作成
+	ctx := context.Background()
+	client, err := speech.NewClient(ctx, option.WithCredentialsFile(serviceAccountKeyPath))
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+	defer client.Close()
+
+	// APIに送信するリクエストを構築
+	req := &speech.RecognizeRequest{
+		Config: &speech.RecognitionConfig{
+			Encoding:        speech.RecognitionConfig_LINEAR16,
+			SampleRateHertz: 48000, // WAVファイルのサンプリングレート
+			LanguageCode:    "ja-JP",
+		},
+		Audio: &speech.RecognitionAudio{
+			AudioSource: &speech.RecognitionAudio_Content{Content: audioData},
+		},
+	}
+
+	// Speech-to-Text APIにリクエストを送信
+	resp, err := client.Recognize(ctx, req)
+	if err != nil {
+		log.Fatalf("Failed to recognize speech: %v", err)
+	}
+
+	// テキストファイルに結果を書き込む
+	file, err := os.Create(s2toutputFilePath)
+	if err != nil {
+		log.Fatalf("Failed to create output file: %v", err)
+	}
+	defer file.Close()
+
+	// UTF-8形式で結果を保存
+	for _, result := range resp.Results {
+		for _, alt := range result.Alternatives {
+			_, err := file.WriteString(fmt.Sprintf("%v\n", alt.Transcript))
+			if err != nil {
+				log.Fatalf("Failed to write to output file: %v", err)
+			}
+		}
+	}
+
+	fmt.Printf("Transcription has been saved to %s\n", s2toutputFilePath)
+
+	// GPT command zone
+	// GPTInputファイルを読み込み
+	GPTinputData, err := ioutil.ReadFile(GPTinputFile)
+	if err != nil {
+		log.Fatalf("Failed to read GPTInput file: %v", err)
+	}
+
+	// GPTRequestを構成
+	GPTrequestData := GPTRequest{
+		Model: "gpt-4-mini", // 使用するモデルを指定
+		Messages: []GPTMessage{
+			{
+				Role:    "system",
+				Content: "You are a helpful assistant.",
+			},
+			{
+				Role:    "user",
+				Content: string(GPTinputData),
+			},
+		},
+	}
+
+	// JSONエンコードしてGPTRequestのリクエストボディを作成
+	GPTreqBody, err := json.Marshal(GPTrequestData)
+	if err != nil {
+		log.Fatalf("Failed to encode GPT request: %v", err)
+	}
+
+	// HTTPリクエストの作成
+	GPTreq, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(GPTreqBody))
+	if err != nil {
+		log.Fatalf("Failed to create GPT request: %v", err)
+	}
+
+	// APIキーをヘッダに追加
+	GPTreq.Header.Set("Content-Type", "application/json")
+	GPTreq.Header.Set("Authorization", "Bearer "+apiKey)
+
+	// HTTPクライアントを使ってリクエストを送信
+	GPTclient := &http.Client{}
+	GPTresp, err := GPTclient.Do(GPTreq)
+	if err != nil {
+		log.Fatalf("Failed to send GPT request: %v", err)
+	}
+	defer GPTresp.Body.Close()
+
+	// GPTResponseを解析
+	var GPTresponse GPTResponse
+	if err := json.NewDecoder(GPTresp.Body).Decode(&GPTresponse); err != nil {
+		log.Fatalf("Failed to decode GPT response: %v", err)
+	}
+
+	// 結果をGPTOutputファイルに書き込む
+	GPTresult := GPTresponse.Choices[0].Message.Content
+	err = ioutil.WriteFile(GPToutputFile, []byte(GPTresult), 0644)
+	if err != nil {
+		log.Fatalf("Failed to write GPT output: %v", err)
+	}
+
+	fmt.Println("処理が完了しました。結果は 'output.txt' に保存されました。")
+
+	// Text to Speech
+	// Text-to-Speechの入力テキストを読み込む
+	inputText, err := ioutil.ReadFile(t2sInputFilePath)
+	if err != nil {
+		log.Fatalf("Failed to read input text file: %v", err)
+	}
+
+	// Google Text-to-Speech クライアントを作成
+	t2sClient, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(serviceAccountKeyPath))
+	if err != nil {
+		log.Fatalf("Failed to create Text-to-Speech client: %v", err)
+	}
+	defer t2sClient.Close()
+
+	// APIに送信するリクエストを構築
+	t2sReq := &texttospeechpb.SynthesizeSpeechRequest{
+		Input: &texttospeechpb.SynthesisInput{
+			InputSource: &texttospeechpb.SynthesisInput_Text{Text: string(inputText)},
+		},
+		Voice: &texttospeechpb.VoiceSelectionParams{
+			LanguageCode: "ja-JP",            // 日本語の音声
+			Name:         "ja-JP-Standard-A", // 日本語のスタンダードな音声
+		},
+		AudioConfig: &texttospeechpb.AudioConfig{
+			AudioEncoding:   texttospeechpb.AudioEncoding_LINEAR16, // 16bit WAV
+			SampleRateHertz: 48000,                                 // 48kHz
+		},
+	}
+
+	// Text-to-Speech APIにリクエストを送信
+	t2sResp, err := t2sClient.SynthesizeSpeech(ctx, t2sReq)
+	if err != nil {
+		log.Fatalf("Failed to synthesize speech: %v", err)
+	}
+
+	// 音声ファイルに結果を書き込む
+	err = ioutil.WriteFile(t2sOutputAudioPath, t2sResp.AudioContent, 0644)
+	if err != nil {
+		log.Fatalf("Failed to write audio file: %v", err)
+	}
+
+	fmt.Printf("Audio content has been saved to %s\n", t2sOutputAudioPath)
+}
+
+// getAPIKeyはgptkey.jsonからAPIキーを取得します
+func getAPIKey(filename string) (string, error) {
+	// ファイルを読み込む
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", fmt.Errorf("failed to read API key file: %v", err)
+	}
+
+	// JSONをデコードしてapikeyを取得
+	var config map[string]string
+	if err := json.Unmarshal(data, &config); err != nil {
+		return "", fmt.Errorf("failed to parse API key file: %v", err)
+	}
+
+	apiKey, exists := config["apikey"]
+	if !exists {
+		return "", fmt.Errorf("apikey not found in %s", filename)
+	}
+
+	return apiKey, nil
+}
