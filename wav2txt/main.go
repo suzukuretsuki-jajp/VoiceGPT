@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 
 	speech "cloud.google.com/go/speech/apiv1"
@@ -26,8 +23,6 @@ func main() {
 
 	s2taudioFilePath := "./testaudio3a.wav"  // Speech-to-Textで入力するWAVファイルのパス
 	s2toutputFilePath := "./s2ttesttext.txt" // Speech-to-Textから出力するテキストファイルのパス
-
-	geminiinputFilePath := "./testtext.txt"
 
 	t2sInputFilePath := "./s2ttesttext.txt"    // Text-to-Speechで入力するテキストファイルのパス
 	t2sOutputAudioPath := "./t2stestaudio.wav" // Text-to-Speechから出力するWAVファイルのパス
@@ -82,64 +77,6 @@ func main() {
 	}
 
 	fmt.Printf("Transcription has been saved to %s\n", s2toutputFilePath)
-
-	// --- Gemini API 処理 ---
-	// Gemini APIのエンドポイントと認証
-	geminiAPIEndpoint := "https://gemini.googleapis.com/v1/text:generate"
-	inputTextPath := geminiinputFilePath            // Speech-to-Textの出力を利用
-	outputGeminiPath := "path/to/gemini_output.txt" // 出力先
-
-	// Speech-to-Textの結果を読み込む
-	inputText, err := ioutil.ReadFile(inputTextPath)
-	if err != nil {
-		log.Fatalf("Failed to read input text file for Gemini: %v", err)
-	}
-
-	// Gemini APIリクエスト構築
-	geminiReqBody := map[string]interface{}{
-		"prompt":      string(inputText),
-		"temperature": 0.7, // 出力のランダム性
-		"maxTokens":   500, // 最大トークン数
-	}
-
-	// リクエストを送信
-	reqBodyBytes, err := json.Marshal(geminiReqBody)
-	if err != nil {
-		log.Fatalf("Failed to marshal Gemini request body: %v", err)
-	}
-
-	httpReq, err := http.NewRequest("POST", geminiAPIEndpoint, bytes.NewBuffer(reqBodyBytes))
-	if err != nil {
-		log.Fatalf("Failed to create HTTP request for Gemini: %v", err)
-	}
-
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Authorization", "Bearer "+os.Getenv("GOOGLE_API_KEY")) // 環境変数にAPIキーを設定済みの場合
-
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(httpReq)
-	if err != nil {
-		log.Fatalf("Failed to call Gemini API: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		log.Fatalf("Gemini API call failed: %v - %v", resp.StatusCode, string(bodyBytes))
-	}
-
-	// Geminiの結果を出力ファイルに保存
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read Gemini API response: %v", err)
-	}
-
-	err = ioutil.WriteFile(outputGeminiPath, respBody, 0644)
-	if err != nil {
-		log.Fatalf("Failed to write Gemini API output to file: %v", err)
-	}
-
-	fmt.Printf("Gemini output has been saved to %s\\n", outputGeminiPath)
 
 	// Text-to-Speechの入力テキストを読み込む
 	inputText, err := ioutil.ReadFile(t2sInputFilePath)
