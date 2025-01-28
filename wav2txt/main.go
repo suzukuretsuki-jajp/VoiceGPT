@@ -10,18 +10,9 @@ import (
 	"os"
 	"strings"
 
-	//"fmt"
-	//"io/ioutil"
-	//"log"
-
-	//"os"
-
 	speech "cloud.google.com/go/speech/apiv1"
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
-
-	//"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"google.golang.org/api/option"
-
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
@@ -51,9 +42,8 @@ func main() {
 	// サービスアカウントキーのパス
 	serviceAccountKeyPath := "C:/Users/sakur/VoiceGPT/Googlecloudkey/tmciteeep-230010-voicegpt-21fb464420b2.json"
 
-	s2taudioFilePath := "./testaudio3a.wav"  // Speech-to-Textで入力するWAVファイルのパス
-	s2toutputFilePath := "./s2ttesttext.txt" // Speech-to-Textから出力するテキストファイルのパス
-
+	s2taudioFilePath := "./testaudio3a.wav"    // Speech-to-Textで入力するWAVファイルのパス
+	s2toutputFilePath := "./s2ttesttext.txt"   // Speech-to-Textから出力するテキストファイルのパス
 	t2sInputFilePath := "./s2ttesttext.txt"    // Text-to-Speechで入力するテキストファイルのパス
 	t2sOutputAudioPath := "./t2stestaudio.wav" // Text-to-Speechから出力するWAVファイルのパス
 
@@ -65,11 +55,11 @@ func main() {
 
 	// Google Speech-to-Text クライアントを作成
 	ctx := context.Background()
-	client, err := speech.NewClient(ctx, option.WithCredentialsFile(serviceAccountKeyPath))
+	speechClient, err := speech.NewClient(ctx, option.WithCredentialsFile(serviceAccountKeyPath))
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
-	defer client.Close()
+	defer speechClient.Close()
 
 	// APIに送信するリクエストを構築
 	req := &speechpb.RecognizeRequest{
@@ -84,7 +74,7 @@ func main() {
 	}
 
 	// Speech-to-Text APIにリクエストを送信
-	resp, err := client.Recognize(ctx, req)
+	resp, err := speechClient.Recognize(ctx, req)
 	if err != nil {
 		log.Fatalf("Failed to recognize speech: %v", err)
 	}
@@ -108,26 +98,15 @@ func main() {
 
 	fmt.Printf("Transcription has been saved to %s\n", s2toutputFilePath)
 
+	// Gemini API用の設定
 	geminiInputFilePath := "./geminiinput.txt"
 	geminiOutputFilePath := "./geminioutput.txt"
 	geminiAPIBaseURL := "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="
 
-	// サービスアカウントキーを読み込む
-	keyFileData, err := ioutil.ReadFile(serviceAccountKeyPath)
-	if err != nil {
-		log.Fatalf("Failed to read service account key file: %v", err)
-	}
-
-	// JSONデータを解析してAPIキーを抽出する
-	var keyData map[string]interface{}
-	err = json.Unmarshal(keyFileData, &keyData)
-	if err != nil {
-		log.Fatalf("Failed to unmarshal key file: %v", err)
-	}
-
-	apiKey, ok := keyData["api_key"].(string) // APIキーのフィールド名を正確に設定
-	if !ok || apiKey == "" {
-		log.Fatalf("API key not found in the key file")
+	// APIキーを環境変数から取得（推奨方法）
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		log.Fatalf("API key not found in environment variables")
 	}
 
 	// 完全なAPIエンドポイントURL
@@ -165,21 +144,21 @@ func main() {
 	}
 
 	// HTTPリクエストの作成と送信
-	req, err := http.NewRequest("POST", geminiAPIURL, strings.NewReader(string(reqBody)))
+	httpClient := &http.Client{}
+	httpReq, err := http.NewRequest("POST", geminiAPIURL, strings.NewReader(string(reqBody)))
 	if err != nil {
 		log.Fatalf("Failed to create request: %v", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	httpResp, err := httpClient.Do(httpReq)
 	if err != nil {
 		log.Fatalf("Failed to send request: %v", err)
 	}
-	defer resp.Body.Close()
+	defer httpResp.Body.Close()
 
 	// レスポンスを読み取り
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(httpResp.Body)
 	if err != nil {
 		log.Fatalf("Failed to read response: %v", err)
 	}
@@ -241,5 +220,4 @@ func main() {
 	}
 
 	fmt.Printf("Audio content has been saved to %s\n", t2sOutputAudioPath)
-
 }
