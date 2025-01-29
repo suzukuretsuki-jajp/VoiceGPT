@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
-
-	//"os"
-	//"strings"
+	"strings"
 
 	speech "cloud.google.com/go/speech/apiv1"
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
@@ -28,15 +28,15 @@ type GeminiRequest struct {
 }
 
 // GeminiResponse represents the response payload from the Gemini API.
-//type GeminiResponse struct {
-//CachedContent string `json:"cachedContent"`
-//Contents      []struct {
-//Role  string `json:"role"`
-//Parts []struct {
-//Text string `json:"text"`
-//} `json:"parts"`
-//} `json:"contents"`
-//}
+type GeminiResponse struct {
+	CachedContent string `json:"cachedContent"`
+	Contents      []struct {
+		Role  string `json:"role"`
+		Parts []struct {
+			Text string `json:"text"`
+		} `json:"parts"`
+	} `json:"contents"`
+}
 
 func main() {
 	// サービスアカウントキーのパス
@@ -97,6 +97,87 @@ func main() {
 	}
 
 	fmt.Printf("Transcription has been saved to %s\n", s2toutputFilePath)
+
+	// Gemini API用の設定
+	geminiInputFilePath := "./geminiinput.txt"
+	geminiOutputFilePath := "./geminioutput.txt"
+	geminiAPIBaseURL := "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="
+
+	// APIキーを環境変数から取得（推奨方法）
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		log.Fatalf("API key not found in environment variables")
+	}
+
+	// 完全なAPIエンドポイントURL
+	geminiAPIURL := geminiAPIBaseURL + apiKey
+
+	// Gemini APIの入力テキストを読み込む
+	geminiInputText, err := ioutil.ReadFile(geminiInputFilePath)
+	if err != nil {
+		log.Fatalf("Failed to read Gemini input text file: %v", err)
+	}
+
+	// Gemini APIリクエストの作成
+	geminiReq := GeminiRequest{
+		Contents: []struct {
+			Role  string `json:"role"`
+			Parts []struct {
+				Text string `json:"text"`
+			} `json:"parts"`
+		}{
+			{
+				Role: "user",
+				Parts: []struct {
+					Text string `json:"text"`
+				}{
+					{Text: string(geminiInputText)},
+				},
+			},
+		},
+	}
+
+	// リクエストをJSONにシリアライズ
+	reqBody, err := json.Marshal(geminiReq)
+	if err != nil {
+		log.Fatalf("Failed to marshal request: %v", err)
+	}
+
+	// HTTPリクエストの作成と送信
+	httpClient := &http.Client{}
+	httpReq, err := http.NewRequest("POST", geminiAPIURL, strings.NewReader(string(reqBody)))
+	if err != nil {
+		log.Fatalf("Failed to create request: %v", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	httpResp, err := httpClient.Do(httpReq)
+	if err != nil {
+		log.Fatalf("Failed to send request: %v", err)
+	}
+	defer httpResp.Body.Close()
+
+	// レスポンスを読み取り
+	respBody, err := ioutil.ReadAll(httpResp.Body)
+	if err != nil {
+		log.Fatalf("Failed to read response: %v", err)
+	}
+
+	// レスポンスの解析
+	var geminiResp GeminiResponse
+	err = json.Unmarshal(respBody, &geminiResp)
+	if err != nil {
+		log.Fatalf("Failed to unmarshal response: %v", err)
+	}
+
+	// 処理されたテキストを新しいテキストファイルに保存
+	processedText := geminiResp.Contents[0].Parts[0].Text
+	err = ioutil.WriteFile(geminiOutputFilePath, []byte(processedText), 0644)
+	if err != nil {
+		log.Fatalf("Failed to write Gemini output text file: %v", err)
+	}
+
+	fmt.Printf("Processed text has been saved to %s\n", geminiOutputFilePath)
 
 	// Text-to-Speechの入力テキストを読み込む
 	inputText, err := ioutil.ReadFile(t2sInputFilePath)
