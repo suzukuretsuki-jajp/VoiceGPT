@@ -7,15 +7,13 @@ import (
 	"log"
 	"os"
 
-	/*"bytes"
+	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
+
+	//"fmt"
+	//"io/ioutil"
 	"net/http"
 	"strings"
-
-
-	*/
 
 	speech "cloud.google.com/go/speech/apiv1"
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
@@ -27,12 +25,11 @@ import (
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
 
-/*
 const (
-	apiKeyFile     = "apikey.txt"     // APIキーが保存されたファイル
-	questionFile   = "question.txt"   // 質問を保存するファイル
-	answerFile     = "answer.txt"     // 回答を保存するファイル
-	geminiAPIURL   = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+	apiKeyFile   = "apikey.txt"   // APIキーが保存されたファイル
+	questionFile = "question.txt" // 質問を保存するファイル
+	answerFile   = "answer.txt"   // 回答を保存するファイル
+	geminiAPIURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 )
 
 // Gemini APIのレスポンス構造体
@@ -110,7 +107,6 @@ func askGemini(apiKey, question string) (string, error) {
 
 	return "No response from Gemini", nil
 }
-*/
 
 func main() {
 	// サービスアカウントキーのパス
@@ -173,37 +169,35 @@ func main() {
 
 	fmt.Printf("Transcription has been saved to %s\n", s2toutputFilePath)
 
-	/*
-		// APIキーをファイルから読み込む
-		apiKey, err := loadTextFromFile(apiKeyFile)
-		if err != nil {
-			fmt.Println("Error: Failed to load API key:", err)
-			return
-		}
+	// APIキーをファイルから読み込む
+	apiKey, err := loadTextFromFile(apiKeyFile)
+	if err != nil {
+		fmt.Println("Error: Failed to load API key:", err)
+		return
+	}
 
-		// 質問をファイルから読み込む
-		question, err := loadTextFromFile(questionFile)
-		if err != nil {
-			fmt.Println("Error: Failed to load question:", err)
-			return
-		}
+	// 質問をファイルから読み込む
+	question, err := loadTextFromFile(questionFile)
+	if err != nil {
+		fmt.Println("Error: Failed to load question:", err)
+		return
+	}
 
-		// Gemini API に問い合わせ
-		answer, err := askGemini(apiKey, question)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
+	// Gemini API に問い合わせ
+	answer, err := askGemini(apiKey, question)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
 
-		// 回答をファイルに保存
-		if err := saveTextToFile(answerFile, answer); err != nil {
-			fmt.Println("Error: Failed to save answer:", err)
-			return
-		}
+	// 回答をファイルに保存
+	if err := saveTextToFile(answerFile, answer); err != nil {
+		fmt.Println("Error: Failed to save answer:", err)
+		return
+	}
 
-		fmt.Println("質問:", question)
-		fmt.Println("回答を", answerFile, "に保存しました。")
-	*/
+	fmt.Println("質問:", question)
+	fmt.Println("回答を", answerFile, "に保存しました。")
 
 	// Text-to-Speechの入力テキストを読み込む
 	inputText, err := ioutil.ReadFile(t2sInputFilePath)
