@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// サービスアカウントキーのパス
-	serviceAccountKeyPath := "C:/Users/sakur/VoiceGPT/Googlecloudkey/tmciteeep-230010-voicegpt-21fb464420b2.json"
+	serviceAccountKeyPath := "C:/Users/sakur/tmciteeep-230010-voicegpt-0f968dbeffbc.json"
 
 	s2taudioFilePath := "./testaudio3a.wav"  // Speech-to-Textで入力するWAVファイルのパス
 	s2toutputFilePath := "./s2ttesttext.txt" // Speech-to-Textから出力するテキストファイルのパス
