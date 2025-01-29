@@ -112,11 +112,11 @@ func main() {
 	// サービスアカウントキーのパス
 	serviceAccountKeyPath := "C:/Users/sakur/tmciteeep-230010-voicegpt-0f968dbeffbc.json"
 
-	s2taudioFilePath := "./testaudio3a.wav"  // Speech-to-Textで入力するWAVファイルのパス
-	s2toutputFilePath := "./s2ttesttext.txt" // Speech-to-Textから出力するテキストファイルのパス
+	s2taudioFilePath := "./whatyourname.wav" // Speech-to-Textで入力するWAVファイルのパス
+	s2toutputFilePath := "./question.txt"    // Speech-to-Textから出力するテキストファイルのパス
 
-	t2sInputFilePath := "./s2ttesttext.txt"    // Text-to-Speechで入力するテキストファイルのパス
-	t2sOutputAudioPath := "./t2stestaudio.wav" // Text-to-Speechから出力するWAVファイルのパス
+	t2sInputFilePath := "./answer.txt"   // Text-to-Speechで入力するテキストファイルのパス
+	t2sOutputAudioPath := "./output.wav" // Text-to-Speechから出力するWAVファイルのパス
 
 	// 音声ファイルを読み込む
 	audioData, err := ioutil.ReadFile(s2taudioFilePath)
