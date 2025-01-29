@@ -7,23 +7,43 @@ import (
 	"log"
 	"os"
 
+	//"os"
+	//"strings"
+
 	speech "cloud.google.com/go/speech/apiv1"
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
-
-	//"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"google.golang.org/api/option"
-
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
+
+// GeminiRequest represents the request payload for the Gemini API.
+type GeminiRequest struct {
+	Contents []struct {
+		Role  string `json:"role"`
+		Parts []struct {
+			Text string `json:"text"`
+		} `json:"parts"`
+	} `json:"contents"`
+}
+
+// GeminiResponse represents the response payload from the Gemini API.
+//type GeminiResponse struct {
+//CachedContent string `json:"cachedContent"`
+//Contents      []struct {
+//Role  string `json:"role"`
+//Parts []struct {
+//Text string `json:"text"`
+//} `json:"parts"`
+//} `json:"contents"`
+//}
 
 func main() {
 	// サービスアカウントキーのパス
 	serviceAccountKeyPath := "C:/Users/sakur/VoiceGPT/Googlecloudkey/tmciteeep-230010-voicegpt-21fb464420b2.json"
 
-	s2taudioFilePath := "./testaudio3a.wav"  // Speech-to-Textで入力するWAVファイルのパス
-	s2toutputFilePath := "./s2ttesttext.txt" // Speech-to-Textから出力するテキストファイルのパス
-
+	s2taudioFilePath := "./testaudio3a.wav"    // Speech-to-Textで入力するWAVファイルのパス
+	s2toutputFilePath := "./s2ttesttext.txt"   // Speech-to-Textから出力するテキストファイルのパス
 	t2sInputFilePath := "./s2ttesttext.txt"    // Text-to-Speechで入力するテキストファイルのパス
 	t2sOutputAudioPath := "./t2stestaudio.wav" // Text-to-Speechから出力するWAVファイルのパス
 
@@ -35,11 +55,11 @@ func main() {
 
 	// Google Speech-to-Text クライアントを作成
 	ctx := context.Background()
-	client, err := speech.NewClient(ctx, option.WithCredentialsFile(serviceAccountKeyPath))
+	speechClient, err := speech.NewClient(ctx, option.WithCredentialsFile(serviceAccountKeyPath))
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
-	defer client.Close()
+	defer speechClient.Close()
 
 	// APIに送信するリクエストを構築
 	req := &speechpb.RecognizeRequest{
@@ -54,7 +74,7 @@ func main() {
 	}
 
 	// Speech-to-Text APIにリクエストを送信
-	resp, err := client.Recognize(ctx, req)
+	resp, err := speechClient.Recognize(ctx, req)
 	if err != nil {
 		log.Fatalf("Failed to recognize speech: %v", err)
 	}
@@ -119,5 +139,4 @@ func main() {
 	}
 
 	fmt.Printf("Audio content has been saved to %s\n", t2sOutputAudioPath)
-
 }
