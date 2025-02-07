@@ -74,6 +74,6 @@ func main() {
 		//Gemini動作終了
 
 		//生成した音声を再生
-
+		Mainspeak()
 	}
 }
