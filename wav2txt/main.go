@@ -11,8 +11,11 @@ import (
 )
 
 const (
-	gpioPin  = "P1_11"               // GPIO 17 (物理ピン11)
-	filePath = "/home/pi/record.wav" // 保存するファイルパス
+	gpioPin    = "P1_11"               // GPIO 17 (物理ピン11)
+	filePath   = "/home/pi/record.wav" // 保存するファイルパス
+	fileFormat = "wav"                 // 🔹 固定のファイル形式
+	sampleRate = 48000                 // 🔹 サンプリング周波数 (Hz)
+	bitDepth   = 16                    // 🔹 ビット深度 (bit)
 )
 
 func main() {
@@ -37,7 +40,11 @@ func main() {
 			if pin.Read() == gpio.High { // ボタンが押されたら録音開始
 				if !recording {
 					fmt.Println("Recording started...")
-					cmd = exec.Command("rec", filePath, "rate", "32k") // SoX で録音開始
+					cmd = exec.Command("rec", filePath,
+						"rate", fmt.Sprintf("%d", sampleRate),
+						"bits", fmt.Sprintf("%d", bitDepth),
+						"-c", "1", // 🔹 モノラル録音
+						"vol", "4.0") // 🔹 音量4倍
 					err := cmd.Start()
 					if err != nil {
 						fmt.Println("Failed to start recording:", err)
