@@ -55,7 +55,7 @@ func main() {
 					recording = false
 				}
 			}
-			if pin.Read() == gpio.Low {
+			if pin.Read() != gpio.High {
 				break //録音部分のループ終了
 			}
 			time.Sleep(100 * time.Millisecond) // CPU負荷を減らすためスリープ
@@ -64,7 +64,9 @@ func main() {
 
 		//gemini動作開始
 		Mainfunc()
-		//Gemini動作終了・出力終了
+		//Gemini動作終了
+
+		//生成した音声を再生
 
 	}
 }
