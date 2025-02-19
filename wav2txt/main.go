@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"time"
 
@@ -17,6 +18,50 @@ const (
 	sampleRate = 48000                 // 🔹 サンプリング周波数 (Hz)
 	bitDepth   = 16                    // 🔹 ビット深度 (bit)
 )
+
+func sHigh(pinN int) error {
+	// Initialize periph.io
+	if _, err := host.Init(); err != nil {
+		return fmt.Errorf("failed to initialize periph: %w", err)
+	}
+
+	// Convert pin number to GPIO name
+	pinName := fmt.Sprintf("GPIO%d", pinN)
+	pin := rpi.PINMap[pinName]
+	if pin == nil {
+		return fmt.Errorf("invalid GPIO pin: %d", pinN)
+	}
+
+	// Set the pin to output and drive it HIGH
+	if err := pin.Out(gpio.High); err != nil {
+		return fmt.Errorf("failed to set pin %d HIGH: %w", pinN, err)
+	}
+
+	log.Printf("GPIO %d set to HIGH", pinN)
+	return nil
+}
+
+func sLow(pinN int) error {
+	// Initialize periph.io
+	if _, err := host.Init(); err != nil {
+		return fmt.Errorf("failed to initialize periph: %w", err)
+	}
+
+	// Convert pin number to GPIO name
+	pinName := fmt.Sprintf("GPIO%d", pinN)
+	pin := rpi.PINMap[pinName]
+	if pin == nil {
+		return fmt.Errorf("invalid GPIO pin: %d", pinN)
+	}
+
+	// Set the pin to output and drive it HIGH
+	if err := pin.Out(gpio.Low); err != nil {
+		return fmt.Errorf("failed to set pin %d HIGH: %w", pinN, err)
+	}
+
+	log.Printf("GPIO %d set to HIGH", pinN)
+	return nil
+}
 
 func main() {
 	// `periph` を初期化
