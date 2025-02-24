@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	gpioPin    = "P1_11"               // GPIO 17 (物理ピン11)
-	filePath   = "/home/pi/record.wav" // 保存するファイルパス
-	fileFormat = "wav"                 // 🔹 固定のファイル形式
-	sampleRate = 48000                 // 🔹 サンプリング周波数 (Hz)
-	bitDepth   = 16                    // 🔹 ビット深度 (bit)
+	gpioPin    = "P1_11"                                             // GPIO 17 (物理ピン11)
+	filePath   = "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/record.wav" // 保存するファイルパス
+	fileFormat = "wav"                                               // 🔹 固定のファイル形式
+	sampleRate = 48000                                               // 🔹 サンプリング周波数 (Hz)
+	bitDepth   = 16                                                  // 🔹 ビット深度 (bit)
 )
 
 func sHigh(pinN int) error {

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	audioFile = "/home/pi/audio/output.wav" // 🔹 再生する音声ファイルのパス
+	audioFile = "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/ansewr.wav" // 🔹 再生する音声ファイルのパス
 )
 
 func Mainspeak() {

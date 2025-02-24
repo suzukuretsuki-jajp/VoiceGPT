@@ -26,9 +26,9 @@ import (
 )
 
 const (
-	apiKeyFile   = "apikey.txt"   // APIキーが保存されたファイル
-	questionFile = "question.txt" // 質問を保存するファイル
-	answerFile   = "answer.txt"   // 回答を保存するファイル
+	apiKeyFile   = "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/apikey.txt"   // APIキーが保存されたファイル
+	questionFile = "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/question.txt" // 質問を保存するファイル
+	answerFile   = "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/answer.txt"   // 回答を保存するファイル
 	geminiAPIURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 )
 
@@ -110,13 +110,13 @@ func askGemini(apiKey, question string) (string, error) {
 
 func Mainfunc() {
 	// サービスアカウントキーのパス
-	serviceAccountKeyPath := "C:/Users/sakur/tmciteeep-230010-voicegpt-0f968dbeffbc.json"
+	serviceAccountKeyPath := "/home/ubuntu/voicegpt/VoiceGPT/Googlecloudkey/tmciteeep-230010-voicegpt-0f968dbeffbc.json"
 
-	s2taudioFilePath := "./whatyourname.wav" // Speech-to-Textで入力するWAVファイルのパス
-	s2toutputFilePath := "./question.txt"    // Speech-to-Textから出力するテキストファイルのパス
+	s2taudioFilePath := "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/question.wav"  // Speech-to-Textで入力するWAVファイルのパス
+	s2toutputFilePath := "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/question.txt" // Speech-to-Textから出力するテキストファイルのパス
 
-	t2sInputFilePath := "./answer.txt"   // Text-to-Speechで入力するテキストファイルのパス
-	t2sOutputAudioPath := "./output.wav" // Text-to-Speechから出力するWAVファイルのパス
+	t2sInputFilePath := "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/answer.txt"   // Text-to-Speechで入力するテキストファイルのパス
+	t2sOutputAudioPath := "/home/ubuntu/voicegpt/VoiceGPT/wav2txt/answer.wav" // Text-to-Speechから出力するWAVファイルのパス
 
 	// 音声ファイルを読み込む
 	audioData, err := ioutil.ReadFile(s2taudioFilePath)
