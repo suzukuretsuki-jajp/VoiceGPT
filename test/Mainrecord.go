@@ -31,7 +31,7 @@ func Mainrecord() {
 	for {
 		if button.Read() == rpio.Low { // ボタンが押されたら録音開始
 			if !recording {
-				log.Println("Recording started...")
+				log.Println("Recording now...")
 				cmd = exec.Command("arecord", "-D", "plughw:2,0", "-f", "S16_LE", "-r", "48000", "-c", "1", "-t", "wav", "input.wav")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
@@ -43,10 +43,10 @@ func Mainrecord() {
 				nowrecord = true
 
 			}
-			fmt.Println("Recording started...")
+			fmt.Println("Recording now...")
 		} else { // ボタンが離されたら録音停止
 			if recording {
-				log.Println("not Recording now")
+				log.Println("Recording stopped")
 				err := cmd.Process.Kill() // `arecord` を強制終了
 				if err != nil {
 					log.Fatal(err)
@@ -54,7 +54,7 @@ func Mainrecord() {
 				recording = false
 			}
 			if nowrecord {
-				fmt.Println("Recording stopped")
+				fmt.Println("not Recording now")
 				break
 			}
 
