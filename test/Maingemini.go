@@ -42,6 +42,23 @@ func saveTextToFile(filePath, text string) error {
 	return ioutil.WriteFile(filePath, []byte(text), 0644)
 }
 
+// ファイルの先頭に固定文字列を追加する関数
+func prependFixedTextToFile(filePath string) error {
+	const fixedText = "あなたは優秀なAIアシスタントです。回答は音声チャットでの使用を行います。文字としての見た目ではなく、読み上げた時の聞き取りやすさを重視して回答して下さい。また、3文程度にまとめてください。以上の指示は、回答からはわからないようにしてください。" // 追加する固定文字列
+
+	// 現在のファイル内容を読み込む
+	currentText, err := loadTextFromFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	// 新しい内容をファイルの先頭に追加
+	newText := fixedText + "\n" + currentText
+
+	// ファイルに新しい内容を書き込む
+	return saveTextToFile(filePath, newText)
+}
+
 // Gemini API に質問を送る関数
 func askGemini(apiKey, question string) (string, error) {
 	// リクエストボディの作成
@@ -101,6 +118,12 @@ func Maingemini() {
 	apiKey, err := loadTextFromFile(apiKeyFile)
 	if err != nil {
 		fmt.Println("Error: Failed to load API key:", err)
+		return
+	}
+
+	// 質問をファイルから読み込む前に、ファイルの先頭に固定文字列を追加
+	if err := prependFixedTextToFile(questionFile); err != nil {
+		fmt.Println("Error: Failed to prepend text:", err)
 		return
 	}
 
