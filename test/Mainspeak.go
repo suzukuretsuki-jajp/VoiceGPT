@@ -16,11 +16,11 @@ func main() {
 	// SoX の `play` コマンドで音声を再生
 	fmt.Println("Playing audio:", audioFile)
 	cmd := exec.Command("play", audioFile)
-	err = cmd.Start()
-	if err != nil {
-		fmt.Println("Failed to start playback:", err)
-		return
-	}
+	//err = cmd.Start()
+	//if err != nil {
+	//	fmt.Println("Failed to start playback:", err)
+	//	return
+	//}
 
 	// 再生完了を待機
 	err := cmd.Wait()
