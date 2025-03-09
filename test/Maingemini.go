@@ -11,10 +11,10 @@ import (
 
 // ファイルのパス
 const (
-	apiKeyFile   = "apikey.txt"   // APIキーが保存されたファイル
-	questionFile = "question.txt" // 質問を保存するファイル
-	answerFile   = "answer.txt"   // 回答を保存するファイル
-	geminiAPIURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+	apiKeyFile   = "apikey.txt"                                                                             // APIキーが保存されたファイル
+	questionFile = "question.txt"                                                                           // 質問を保存するファイル
+	answerFile   = "answer.txt"                                                                             // 回答を保存するファイル
+	geminiAPIURL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-001:generateContent" // 修正
 )
 
 // Gemini APIのレスポンス構造体
@@ -78,6 +78,9 @@ func askGemini(apiKey, question string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	// デバッグ用にレスポンスを表示（エラー時の詳細確認）
+	//fmt.Println("Raw Response:", string(body))
 
 	// JSONを解析
 	var geminiResp GeminiResponse
