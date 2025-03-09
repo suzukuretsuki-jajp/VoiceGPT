@@ -25,6 +25,7 @@ func Mainrecord() {
 	button.PullUp() // プルアップ抵抗を有効化（ボタンが押されると LOW になる）
 
 	var cmd *exec.Cmd
+	nowrecord := false
 	recording := false
 
 	for {
@@ -39,18 +40,24 @@ func Mainrecord() {
 					log.Fatal(err)
 				}
 				recording = true
+				nowrecord = true
+
 			}
 			fmt.Println("Recording started...")
 		} else { // ボタンが離されたら録音停止
 			if recording {
-				log.Println("Recording stopped.")
+				log.Println("not Recording now")
 				err := cmd.Process.Kill() // `arecord` を強制終了
 				if err != nil {
 					log.Fatal(err)
 				}
 				recording = false
 			}
-			fmt.Println("Recording stopped...")
+			if nowrecord {
+				fmt.Println("Recording stopped")
+				break
+			}
+
 		}
 		time.Sleep(100 * time.Millisecond) // CPU 使用率を抑えるために待機
 	}
