@@ -5,8 +5,12 @@ import (
 )
 
 func main() {
-	fmt.Println("OK,clossompile")
-	//Mainfunc()
-	//Mainspeak()
-	Mainrecord()
+	fmt.Println("welcome to gemini world")
+	for {
+		Mainrecord()
+		Speech2text()
+		Maingemini()
+		Text2speech()
+		Mainspeak()
+	}
 }

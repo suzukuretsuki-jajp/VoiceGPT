@@ -96,7 +96,7 @@ func askGemini(apiKey, question string) (string, error) {
 	return "No response from Gemini", nil
 }
 
-func main() {
+func Maingemini() {
 	// APIキーをファイルから読み込む
 	apiKey, err := loadTextFromFile(apiKeyFile)
 	if err != nil {
