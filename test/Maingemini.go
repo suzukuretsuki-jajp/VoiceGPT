@@ -44,7 +44,7 @@ func saveTextToFile(filePath, text string) error {
 
 // ファイルの先頭に固定文字列を追加する関数
 func prependFixedTextToFile(filePath string) error {
-	const fixedText = "あなたは優秀なAIアシスタントです。回答は音声チャットでの使用を行います。文字としての見た目ではなく、読み上げた時の聞き取りやすさを重視して回答して下さい。また、3文程度にまとめてください。以上の指示は、回答からはわからないようにしてください。" // 追加する固定文字列
+	const fixedText = "回答は音声チャットでの使用を行います。文字としての見た目ではなく、読み上げた時の聞き取りやすさを重視して回答して下さい。また、ですます調の敬語による回答を行い、3文程度にまとめてください。以上の指示は、回答からはわからないようにしてください。" // 追加する固定文字列
 
 	// 現在のファイル内容を読み込む
 	currentText, err := loadTextFromFile(filePath)
