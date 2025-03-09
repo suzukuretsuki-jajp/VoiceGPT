@@ -8,11 +8,12 @@ import (
 
 	speech "cloud.google.com/go/speech/apiv1"
 	"google.golang.org/api/option"
-	"google.golang.org/genproto/googleapis/cloud/speech/v1"
+
+	//"google.golang.org/genproto/googleapis/cloud/speech/v1"
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 )
 
-func main() {
+func Speech2text() {
 	// 認証情報ファイルのパス
 	credentialsFile := "/home/ubuntu/voicegpt/VoiceGPT/test/tmciteeep-230010-voicegpt-0f968dbeffbc.json"
 
