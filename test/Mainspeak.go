@@ -7,8 +7,8 @@ import (
 
 func Mainspeak() {
 	// SoX の `play` コマンドで音声を再生
-	fmt.Println("Playing audio:", "answer.wav")
-	cmd := exec.Command("play", "answer.wav")
+	fmt.Println("Playing audio:", "output.wav")
+	cmd := exec.Command("play", "output.wav")
 
 	// 再生開始
 	err := cmd.Start()
