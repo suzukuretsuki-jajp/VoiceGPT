@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func main() {
+func Mainspeak() {
 	// SoX の `play` コマンドで音声を再生
 	fmt.Println("Playing audio:", "answer.wav")
 	cmd := exec.Command("play", "answer.wav")
@@ -24,4 +24,5 @@ func main() {
 	} else {
 		fmt.Println("Playback finished.")
 	}
+
 }
