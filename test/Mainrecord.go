@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"time"
 
@@ -28,9 +29,9 @@ func Mainrecord() {
 
 	for {
 		if button.Read() == rpio.Low { // ボタンが押されたら録音開始
-			/*if !recording {
+			if !recording {
 				log.Println("Recording started...")
-				cmd = exec.Command("arecord", "-D", "plughw:1,0", "-f", "cd", "-t", "wav", "output.wav")
+				cmd = exec.Command("arecord", "-D", "plughw:2,0", "-f", "S16_LE", "-r", "48000", "-c", "1", "-t", "wav", "input.wav")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 				err := cmd.Start()
@@ -38,17 +39,17 @@ func Mainrecord() {
 					log.Fatal(err)
 				}
 				recording = true
-			}*/
+			}
 			fmt.Println("Recording started...")
 		} else { // ボタンが離されたら録音停止
-			/*if recording {
+			if recording {
 				log.Println("Recording stopped.")
 				err := cmd.Process.Kill() // `arecord` を強制終了
 				if err != nil {
 					log.Fatal(err)
 				}
 				recording = false
-			}*/
+			}
 			fmt.Println("Recording stopped...")
 		}
 		time.Sleep(100 * time.Millisecond) // CPU 使用率を抑えるために待機
