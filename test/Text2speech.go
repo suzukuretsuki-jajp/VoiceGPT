@@ -44,6 +44,7 @@ func Text2speech() {
 		},
 		AudioConfig: &texttospeechpb.AudioConfig{
 			AudioEncoding: texttospeechpb.AudioEncoding_LINEAR16, // 出力音声のエンコーディング
+			SpeakingRate:  1.5,                                   // 読み上げ速度を設定（デフォルトは1.0）
 		},
 	}
 
